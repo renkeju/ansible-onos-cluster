@@ -38,7 +38,7 @@
 
 ## 执行 ansible playbook
   
-    ```
-    ansible-playbook main.yml -i inventory/hosts.ini
-    ansible-playbook ha.yml -i inventory/hosts.ini
-    ```
+```
+ansible-playbook main.yml -i inventory/hosts.ini
+ansible-playbook ha.yml -i inventory/hosts.ini
+```
