@@ -33,3 +33,9 @@
     name: haproxy 
     state: started 
     enabled: yes
+
+- name: copy haproxy_certbot.sh
+  copy:
+    src: haproxy_certbot.sh
+    dest: /etc/haproxy/haproxy_certbot.sh
+    mode: 0755
