@@ -1,0 +1,4 @@
+onos_version: 2.0.0
+onos_apps: "drivers,openflow,cluster-ha"
+onos_web_pass: rocks 
+# onos_ssh_public_key: 

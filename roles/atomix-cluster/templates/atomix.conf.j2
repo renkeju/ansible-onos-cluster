@@ -1,23 +1,23 @@
 cluster {
   cluster-id: onos
   node {
-{% for node in atomix %}
-    {%if inventory_hostname == node.hostname %}
-    id: {{ node.hostname }}
-    address: "{{ node.address }}:5679"
-    {% endif %}
+{% for host in groups['atomix'] %}
+{%if inventory_hostname == hostvars[host]['inventory_hostname'] %}
+    id: {{ hostvars[host]['inventory_hostname'] }}
+    address: "{{ hostvars[host]['ansible_ssh_host'] }}:5679"
+{% endif %}
 {% endfor %}
   }
   discovery {
     type: bootstrap
-    {% set count = 1 %}
-    {% for node in atomix %}
+{% set count = 1 %}
+{% for host in groups['atomix'] %}
     nodes.{{count}} {
-      id: {{ node.hostname }}
-      address: "{{ node.address }}:5679"      
+      id: {{ hostvars[host]['inventory_hostname'] }}
+      address: "{{ hostvars[host]['ansible_ssh_host'] }}:5679"      
     }
-    {% set count = count + 1 %}
-    {% endfor %}
+{% set count = count + 1 %}
+{% endfor %}
   }
 }
  
@@ -25,12 +25,12 @@ management-group {
   type: raft
   partitions: 1
   storage.level: disk
-  members: [{% for node in atomix %}{{ node.hostname }}{% if not loop.last %},{% endif %}{% endfor %}]
+  members: [{% for host in groups['atomix'] %}{{ hostvars[host]['inventory_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}]
 }
  
 partition-groups.raft {
   type: raft
   partitions: 3
   storage.level: disk
-  members: [{% for node in atomix %}{{ node.hostname }}{% if not loop.last %},{% endif %}{% endfor %}]
+  members: [{% for host in groups['atomix'] %}{{ hostvars[host]['inventory_hostname'] }}{% if not loop.last %},{% endif %}{% endfor %}]
 }

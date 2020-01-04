@@ -1,0 +1,17 @@
+# IP addresses of the ONOS cluster nodes
+{% set count = 1 %}
+{% for host in groups['onos'] %}
+export OC{{ count }}={{ hostvars[host]['ansible_ssh_host'] }}
+{% set count = count + 1 %}
+{% endfor %}
+ 
+# Provide a list of all ONOS instances using the above variables
+{% set count = 1 %}
+export ONOS_INSTANCES="{% for host in groups['onos'] %}$OC{{ count }}{% set count = count + 1 %}{% if not loop.last %} {% endif %}{% endfor %}"
+ 
+# Optionally export ONOS web user/password if non-default ones are used
+export ONOS_WEB_USER=onos
+export ONOS_WEB_PASS={{ onos_web_pass }}
+
+# Add onos admin PATH
+export PATH=$PATH:/usr/local/onos-admin

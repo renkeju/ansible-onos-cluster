@@ -1,21 +1,22 @@
 {
   "name": "onos",
   "node": {
-{% for node in onos %}
-    {%if inventory_hostname == node.hostname %}
-    "id": "{{ node.hostname }}",
-    "ip": "{{ node.address }}",
+{% for host in groups['onos'] %}
+{% if inventory_hostname == hostvars[host]['inventory_hostname'] %}
+    "id": "{{ hostvars[host]['inventory_hostname'] }}",
+    "ip": "{{ hostvars[host]['ansible_ssh_host'] }}",
     "port": 9876
-    {% endif %}
+{% endif %}
 {% endfor %}
   },
   "storage": [
-{% for node in atomix %}
+{% for host in groups['atomix'] %}
     {
-      "id": "{{ node.hostname }}",
-      "host": "{{ node.hostname }}",
+      "id": "{{ hostvars[host]['inventory_hostname'] }}",
+      "host": "{{ hostvars[host]['ansible_ssh_host'] }}",
       "port": 5679
-    }{% if not loop.last %},{% endif %}
+    }{% if not loop.last %},
+{% endif %}
 {% endfor %}
   ]
 }

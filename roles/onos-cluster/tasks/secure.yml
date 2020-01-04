@@ -1,0 +1,11 @@
+---
+
+- name: Securing ONOS Cluster
+  command: /opt/onos/bin/onos-user-key onos {{ onos_ssh_public_key }}
+  notify: restart onos
+  when: onos_ssh_public_key is defined
+
+- name: Securing ONOS Cluster Password
+  command: /opt/onos/bin/onos-user-password onos {{ onos_web_pass }}
+  notify: restart onos
+  when: onos_web_pass is defined

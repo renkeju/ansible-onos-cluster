@@ -1,4 +1,5 @@
 ---
+
 - name: Copy host resolver
   template:
     src: hosts.j2
@@ -6,10 +7,9 @@
 
 - name: Install software-properties-common
   apt:
-    name: "{{ packages }}"
+    force_apt_get: yes
     update_cache: yes
-  vars:
-    packages:
+    pkg:
     - software-properties-common
     - curl
     - wget
@@ -28,9 +28,14 @@
     path: /opt/atomix
     state: directory
 
-- name: Download and extract atomix
+- name: Upload atomix-dist-{{ atomix_version }}.tar.gz
+  copy:
+    src: "atomix-dist-{{ atomix_version }}.tar.gz"
+    dest: "/tmp/atomix-dist-{{ atomix_version }}.tar.gz"
+
+- name: extract atomix-dist-{{ atomix_version }}.tar.gz
   unarchive:
-    src: https://oss.sonatype.org/content/repositories/releases/io/atomix/atomix-dist/{{ atomix_version }}/atomix-dist-{{ atomix_version }}.tar.gz
+    src: "/tmp/atomix-dist-{{ atomix_version }}.tar.gz"
     dest: /opt/atomix
     remote_src: yes
 
@@ -38,6 +43,7 @@
   template:
     src: "atomix.conf.j2"
     dest: "/opt/atomix/conf/atomix.conf"
+  notify: restart atomix
 
 - name: Create atomix service files
   template:
@@ -46,10 +52,4 @@
     mode: 644
   with_items:
     - { src: 'atomix.service.j2', dest: '/etc/systemd/system/atomix.service' }
-
-- name: Start atomix
-  systemd:
-    name: atomix
-    state: restarted
-    daemon_reload: yes
-    enabled: yes
+  notify: restart atomix

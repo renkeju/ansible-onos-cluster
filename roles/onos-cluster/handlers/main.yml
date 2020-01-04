@@ -1,2 +1,9 @@
 ---
 # handlers file for onos-cluster
+
+- name: restart onos
+  systemd:
+    name: onos
+    state: started
+    daemon_reload: yes
+    enabled: yes

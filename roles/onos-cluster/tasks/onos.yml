@@ -1,4 +1,5 @@
 ---
+
 - name: Copy host resolver
   template:
     src: hosts.j2
@@ -6,10 +7,9 @@
 
 - name: Install software-properties-common
   apt:
-    name: "{{ packages }}"
     update_cache: yes
-  vars:
-    packages:
+    force_apt_get: yes
+    pkg:
     - software-properties-common
     - curl
     - wget
@@ -17,19 +17,31 @@
   
 - name: Install Java
   apt:
-    name: "{{ packages }}"
     update_cache: yes
-  vars:
-    packages:
+    force_apt_get: yes
+    pkg:
     - openjdk-8-jdk
 
-- name: create user sdn
-  shell: adduser sdn --system --group
+- name: create groud sdn
+  group:
+    name: sdn
+    state: present
 
-- name: Download and extract ONOS
+- name: create user sdn
+  user:
+    system: yes
+    group: sdn
+    name: sdn
+
+- name: Upload onos-{{ onos_version }}.tar.gz
+  copy:
+    src: onos-{{ onos_version }}.tar.gz
+    dest: "/tmp/onos-{{ onos_version }}.tar.gz"
+
+- name: extract onos-{{ onos_version }}.tar.gz
   unarchive:
-    src: http://repo1.maven.org/maven2/org/onosproject/onos-releases/{{ onos_version }}/onos-{{ onos_version }}.tar.gz
-    dest: /opt/
+    src: /tmp/onos-{{ onos_version }}.tar.gz
+    dest: /opt
     remote_src: yes
     owner: sdn
     group: sdn
@@ -39,8 +51,18 @@
     path: /opt/onos-{{ onos_version }}
   register: onos_stat
 
-- name: Move onos-{{ onos_version }} to onos
-  command: mv /opt/onos-{{ onos_version }} /opt/onos
+- name: Delete onos-{{ onos_version }} link
+  file:
+    state: absent
+    path: /opt/onos
+
+- name: link onos-{{ onos_version }} to onos
+  file:
+    state: link
+    src: /opt/onos-{{ onos_version }}
+    dest: /opt/onos
+    owner: sdn
+    group: sdn
   when: onos_stat.stat.exists
 
 - name: Create onos configuration
@@ -57,9 +79,13 @@
   template:
     src: "cluster.json.j2"
     dest: "/opt/onos/config/cluster.json"
+  notify: restart onos
 
 - name: chown onos directory
-  command: chown -R sdn:sdn /opt/onos
+  file:
+    path: /opt/onos-{{ onos_version }}
+    owner: sdn
+    group: sdn
   when: onos_stat.stat.exists
 
 - name: copy files
@@ -68,6 +94,7 @@
     src: /opt/onos/init/onos.initd
     dest: /etc/init.d/onos
     mode: 755
+  notify: restart onos
 
 - name: copy files
   copy:
@@ -75,10 +102,4 @@
     src: /opt/onos/init/onos.service
     dest: /etc/systemd/system/
     mode: 755
-
-- name: Start ONOS
-  systemd:
-    name: onos
-    state: started
-    daemon_reload: yes
-    enabled: yes
+  notify: restart onos

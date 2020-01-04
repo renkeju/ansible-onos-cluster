@@ -1,0 +1,6 @@
+- name: Bootstraping High availability
+  hosts: ha
+  roles:
+  - onos-tools
+  - certbot
+  - haproxy

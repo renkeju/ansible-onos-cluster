@@ -1,0 +1,43 @@
+---
+
+- name: Upload onos-admin-{{ onos_admin_version }}-SNAPSHOT.tar.gz
+  copy:
+    src: onos-admin-{{ onos_admin_version }}-SNAPSHOT.tar.gz
+    dest: /tmp/onos-admin-{{ onos_admin_version }}-SNAPSHOT.tar.gz
+
+- name: extract onos-admin-{{ onos_admin_version }}-SNAPSHOT.tar.gz
+  unarchive:
+    src: /tmp/onos-admin-{{ onos_admin_version }}-SNAPSHOT.tar.gz
+    dest: /opt
+    remote_src: yes
+
+- name: chown onos admin tools directory
+  file:
+    path: /usr/local/onos-admin
+    recurse: yes
+    state: directory
+    owner: root
+    group: root
+
+- name: stat onos admin directory
+  stat:
+    path: /opt/onos-admin-{{ onos_admin_version }}-SNAPSHOT
+  register: onos_admin_stat
+
+- name: link onos-admin-{{ onos_admin_version }}-SNAPSHOT to onos-admin
+  file:
+    state: link
+    src: /opt/onos-admin-{{ onos_admin_version }}-SNAPSHOT
+    dest: /usr/local/onos-admin
+  when: onos_admin_stat.stat.exists
+
+- name: Generate onos admin environment
+  template:
+    src: onos.sh.j2
+    dest: /etc/profile.d/onos.sh
+
+- name: Generate onos admin environment
+  template:
+    src: onos.j2
+    dest: /usr/local/onos-admin/onos
+    mode: "0755"

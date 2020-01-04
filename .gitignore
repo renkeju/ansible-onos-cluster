@@ -1,0 +1,2 @@
+*.tar.gz
+inventory/host_vars
