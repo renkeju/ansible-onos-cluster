@@ -1,8 +1,6 @@
 # IP addresses of the ONOS cluster nodes
-{% set count = 1 %}
 {% for host in groups['onos'] %}
-export OC{{ count }}={{ hostvars[host]['ansible_ssh_host'] }}
-{% set count = count + 1 %}
+export OC{{ loop.index }}={{ hostvars[host]['ansible_ssh_host'] }}
 {% endfor %}
  
 # Provide a list of all ONOS instances using the above variables
