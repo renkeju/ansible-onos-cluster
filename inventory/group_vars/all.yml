@@ -1,3 +1,4 @@
 ansible_python_interpreter: /usr/bin/python3
-onos_web_pass: rocks
+
+onos_web_pass: "rocks"
 # onos_ssh_public_key: 

@@ -53,3 +53,27 @@
   with_items:
     - { src: 'atomix.service.j2', dest: '/etc/systemd/system/atomix.service' }
   notify: restart atomix
+
+- name: check atomix data
+  stat:
+    path: /opt/atomix/data/raft
+  register: atomix_raft_data_stat
+
+- debug:
+    var: atomix_refresh_data
+
+- debug:
+    var: atomix_raft_data_stat.stat.exists
+
+- name: stop atomix service
+  systemd:
+    state: stopped
+    name: atomix
+  when: atomix_raft_data_stat.stat.exists and atomix_refresh_data
+
+- name: delete atomix data
+  file:
+    path: /opt/atomix/data/raft
+    state: absent
+  when: atomix_raft_data_stat.stat.exists and atomix_refresh_data
+
